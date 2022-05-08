@@ -66,7 +66,7 @@ public class Cell : MonoBehaviour
         for (int i = 0; i < 9; i++)
         {
             // Activate if it contains stuff
-            buttons[i].SetActive(spos.Contains(i + 1));
+            buttons[i].SetActive(spos.Contains(i + 1) && entropy() != 1);
         }
     }
 }

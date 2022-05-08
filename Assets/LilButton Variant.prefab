@@ -179,20 +179,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &5952250442280846892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2324122833285726328}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dfae1b0d804b786aa9f12687f64313cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _CellId: 0
-  _Val: 0
 --- !u!114 &2324122833285726333 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8708407878505912667, guid: 1271cf36d2d6ea1d3b56aa60146f728d, type: 3}
