@@ -17,7 +17,7 @@ public class Cell : MonoBehaviour
 
     private GameObject[] buttons;
 
-    public Sudoku board;
+    public SudokuBoard board;
 
     // Start is called before the first frame update
     void Start()

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1345556166362295978}
   - component: {fileID: 1345556166362295989}
   - component: {fileID: 1345556166362295988}
-  - component: {fileID: 1345556166362295976}
+  - component: {fileID: 2649211785875982345}
   m_Layer: 0
   m_Name: SudokuBoard
   m_TagString: Untagged
@@ -100,7 +100,7 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1345556166362295976
+--- !u!114 &2649211785875982345
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1345556166362295991}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3eb3e79fcd555dad68ba703fcddbe995, type: 3}
+  m_Script: {fileID: 11500000, guid: 2f5205259f0ade6f4867ce2282784280, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   bigButton: {fileID: 8708407878505912670, guid: 1271cf36d2d6ea1d3b56aa60146f728d, type: 3}
@@ -125,6 +125,7 @@ GameObject:
   - component: {fileID: 1345556166432961628}
   - component: {fileID: 1345556166432961631}
   - component: {fileID: 1345556166432961630}
+  - component: {fileID: 3892855959501413328}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -213,3 +214,16 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &3892855959501413328
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1345556166432961625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f5205259f0ade6f4867ce2282784280, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bigButton: {fileID: 0}

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class Sudoku : MonoBehaviour
+public class SudokuBoard : MonoBehaviour
 {
 
     //TODO workout a formula for perfect alignment
     const float CELL_OFFSET = 9.0f / 2 - .070f; // board width / cell number
+    HashSet<int> DEFAULT_SPOS = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
     public GameObject bigButton;
 
     Node[] nodes;
@@ -29,6 +31,7 @@ public class Sudoku : MonoBehaviour
             //Init node
             var node = new Node();
             nodes[i] = node;
+            node.spos.UnionWith(DEFAULT_SPOS);
             node.nodes = nodes;
             node.hoods = hoods;
             node.propagations = propagations;
@@ -66,6 +69,12 @@ public class Sudoku : MonoBehaviour
         nodes[id].Set(v);
     }
 
+    public void Reset(){
+        for (int i = 0; i < 81; i ++) {
+            nodes[i].spos.UnionWith(DEFAULT_SPOS);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -83,7 +92,7 @@ public class Sudoku : MonoBehaviour
         public int hood = 0;
         public int row = 0;
         public int col = 0;
-        public HashSet<int> spos = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        public HashSet<int> spos = new HashSet<int>();
 
         public Node[] nodes;
         public Node[,] hoods;
@@ -108,10 +117,10 @@ public class Sudoku : MonoBehaviour
                 var e = Entropy();
                 if (e == 1)
                 {
-                    Debug.LogError("Setting shit on fire");
                     Set(val());
                 } else if (e == 0) {
                     Debug.LogError("Something fucked up");
+                    return false;
                 }
             }
             return true;

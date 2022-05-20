@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8708407878505912666}
   - component: {fileID: 8708407878505912667}
   - component: {fileID: 3885427865713774674}
+  - component: {fileID: 205475527390682958}
   m_Layer: 5
   m_Name: BigButton
   m_TagString: Untagged
@@ -61,7 +62,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.21960784}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -93,6 +94,19 @@ MonoBehaviour:
   text: {fileID: 8708407879551356303}
   ID: 0
   lilButton: {fileID: 2324122833285726328, guid: 604dc52e244bbfdb8ba0dcfbc4fbddda, type: 3}
+  board: {fileID: 0}
+--- !u!114 &205475527390682958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8708407878505912670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5041e3cb3f6f26a4954a691c54dd4f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8708407879551356337
 GameObject:
   m_ObjectHideFlags: 0
