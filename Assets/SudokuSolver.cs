@@ -5,14 +5,20 @@ using UnityEngine;
 public class SudokuSolver : MonoBehaviour
 {
 
-    public SudokuBoard board;
-
     Stack<BoardState> history;
+    public GameObject canvas;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        var board = gameObject.GetComponent<SudokuBoard>();
+        if(board != null) {
+            board.Init(canvas);
+        }
+        var spos = gameObject.GetComponent<Superpositions>();
+        if(spos != null) {
+            spos.Init(canvas);
+        }
     }
 
     // Update is called once per frame
