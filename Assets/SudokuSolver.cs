@@ -40,7 +40,8 @@ public class SudokuSolver : MonoBehaviour
         UpdateComponents();
     }
 
-    void InitNodes() {
+    void InitNodes()
+    {
         this.propagations = new Stack<Node>();
         this.nodes = new Node[81];
         for (int i = 0; i < 81; i++)
@@ -81,22 +82,12 @@ public class SudokuSolver : MonoBehaviour
         }
         int Clamp(int k)
         {
-            if (k < 0)
-            {
-                return 0;
-            }
-            else if (k < 1)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
+            return k == 0 ? 1 : 0;
         }
     }
 
-    void InitBoardState() {
+    void InitBoardState()
+    {
         this.history = new Stack<GameState>();
         var gameState = new GameState(new int[] {
             0,0,0,0,0,0,0,0,0,
@@ -112,13 +103,16 @@ public class SudokuSolver : MonoBehaviour
         this.history.Push(gameState);
     }
 
-    void UpdateComponents() {
+    void UpdateComponents()
+    {
         var st = history.Peek();
         st.Propagate(propagations);
-        if(this.c_board != null) {
+        if (this.c_board != null)
+        {
             this.c_board.UpdateState(st.board);
         }
-        if(this.c_superpositions != null) {
+        if (this.c_superpositions != null)
+        {
             this.c_superpositions.UpdateState(st.spos);
         }
     }
@@ -140,7 +134,8 @@ public class SudokuSolver : MonoBehaviour
             for (int i = 0; i < 81; i++)
             {
                 spos[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-                if(board[i] > 0) {
+                if (board[i] > 0)
+                {
                     nodes[i].Set(board[i], spos);
                 }
             }
@@ -206,7 +201,5 @@ public class SudokuSolver : MonoBehaviour
             spos[id].Add(v);
             propagations.Push(this);
         }
-
-
     }
 }
