@@ -123,6 +123,42 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &73587174 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1345556166432961625, guid: 1aa55d70fffac41f98c45b9eb31d4e21, type: 3}
+  m_PrefabInstance: {fileID: 1345556166759000826}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &603817231 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1345556166362295991, guid: 1aa55d70fffac41f98c45b9eb31d4e21, type: 3}
+  m_PrefabInstance: {fileID: 1345556166759000826}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &603817237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603817231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5041e3cb3f6f26a4954a691c54dd4f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  button: {fileID: 2324122833285726328, guid: 604dc52e244bbfdb8ba0dcfbc4fbddda, type: 3}
+--- !u!114 &603817238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 603817231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3d6ec222fd21ecd9b17cea295a1344, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 73587174}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -427,5 +463,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 963194227}
-    m_RemovedComponents: []
+    - target: {fileID: 2649211785875982345, guid: 1aa55d70fffac41f98c45b9eb31d4e21, type: 3}
+      propertyPath: cellObject
+      value: 
+      objectReference: {fileID: 8708407878505912670, guid: 1271cf36d2d6ea1d3b56aa60146f728d, type: 3}
+    m_RemovedComponents:
+    - {fileID: 3892855959501413328, guid: 1aa55d70fffac41f98c45b9eb31d4e21, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 1aa55d70fffac41f98c45b9eb31d4e21, type: 3}
