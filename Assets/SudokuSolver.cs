@@ -5,7 +5,7 @@ using System.Linq;
 
 public class SudokuSolver : MonoBehaviour
 {
-    Stack<BoardState> history;
+    Stack<GameState> history;
     public GameObject canvas;
     Node[] nodes;
     Stack<Node> propagations;
@@ -15,9 +15,33 @@ public class SudokuSolver : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        this.history = new Stack<BoardState>();
-        this.propagations = new Stack<Node>();
+        InitNodes();
 
+        InitBoardState();
+
+        this.c_board = gameObject.GetComponent<SudokuBoard>();
+        if (this.c_board != null)
+        {
+            this.c_board.Init(canvas);
+        }
+
+        this.c_superpositions = gameObject.GetComponent<Superpositions>();
+        if (this.c_superpositions != null)
+        {
+            this.c_superpositions.Init(canvas);
+            this.c_superpositions.RegisterOnclick((i, v) =>
+            {
+                var st = history.Peek().spos;
+                nodes[i].Set(v, st);
+                UpdateComponents();
+            });
+        }
+
+        UpdateComponents();
+    }
+
+    void InitNodes() {
+        this.propagations = new Stack<Node>();
         this.nodes = new Node[81];
         for (int i = 0; i < 81; i++)
         {
@@ -37,37 +61,6 @@ public class SudokuSolver : MonoBehaviour
                 }
             }
         }
-
-        var boardState = new BoardState(new int[] {
-            0,0,0,0,0,0,0,0,0,
-            0,7,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,4,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            1,0,0,0,8,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,2,0,0,0,0,0,0,
-            0,0,0,0,0,0,3,0,0,
-        }, this.nodes);
-        this.history.Push(boardState);
-
-        this.c_board = gameObject.GetComponent<SudokuBoard>();
-        if (this.c_board != null)
-        {
-            this.c_board.Init(canvas);
-        }
-        this.c_superpositions = gameObject.GetComponent<Superpositions>();
-        if (this.c_superpositions != null)
-        {
-            this.c_superpositions.Init(canvas);
-            this.c_superpositions.RegisterOnclick((i, v) =>
-            {
-                var st = history.Peek().spos;
-                nodes[i].Set(v, st);
-                UpdateBoardState();
-            });
-        }
-
 
         // For explanation https://www.desmos.com/calculator/rrucuhps2t
         int CheckRow(int candidate, int origin)
@@ -101,12 +94,25 @@ public class SudokuSolver : MonoBehaviour
                 return 0;
             }
         }
-
-
-        UpdateBoardState();
     }
 
-    void UpdateBoardState() {
+    void InitBoardState() {
+        this.history = new Stack<GameState>();
+        var gameState = new GameState(new int[] {
+            0,0,0,0,0,0,0,0,0,
+            0,7,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,4,0,0,
+            0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,
+            1,0,0,0,8,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,
+            0,0,2,0,0,0,0,0,0,
+            0,0,0,0,0,0,3,0,0,
+        }, this.nodes);
+        this.history.Push(gameState);
+    }
+
+    void UpdateComponents() {
         var st = history.Peek();
         st.Propagate(propagations);
         if(this.c_board != null) {
@@ -123,11 +129,11 @@ public class SudokuSolver : MonoBehaviour
 
     }
 
-    class BoardState
+    class GameState
     {
         public int[] board;
         public HashSet<int>[] spos; // super positions at that node
-        public BoardState(int[] board, Node[] nodes)
+        public GameState(int[] board, Node[] nodes)
         {
             this.board = new int[81];
             this.spos = new HashSet<int>[81];
