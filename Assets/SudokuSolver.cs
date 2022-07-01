@@ -56,7 +56,7 @@ public class SudokuSolver : MonoBehaviour
         {
             for (int k = 0; k < 81; k++)
             {
-                if (i != k && (CheckRow(k, i) + CheckCol(k, i) + CheckHood(k, i)) > 0)
+                if (i != k && IsNeighbor(i, k) > 0)
                 {
                     nodes[k].neighbors.Add(nodes[i]);
                 }
@@ -64,21 +64,13 @@ public class SudokuSolver : MonoBehaviour
         }
 
         // For explanation https://www.desmos.com/calculator/rrucuhps2t
-        int CheckRow(int candidate, int origin)
+        int IsNeighbor(int candidate, int origin)
         {
-            return Clamp(candidate / 9 - origin / 9);
-        }
-        int CheckCol(int candidate, int origin)
-        {
-            return Clamp((candidate - origin) % 9);
-        }
-        int CheckHood(int candidate, int origin)
-        {
-            return CheckK(candidate, origin) * Clamp((candidate / (9 * 3)) - (origin / (9 * 3)));
-        }
-        int CheckK(int candidate, int origin)
-        {
-            return Clamp((candidate / 3) % 3 - (origin / 3) % 3);
+            return
+            Clamp(candidate / 9 - origin / 9) + //row
+            Clamp((candidate - origin) % 9) + //column
+            Clamp((candidate / 3) % 3 - (origin / 3) % 3) * //neighborhood mask
+            Clamp((candidate / (9 * 3)) - (origin / (9 * 3))); // neighborhood
         }
         int Clamp(int k)
         {
