@@ -32,7 +32,7 @@ public class Superpositions : MonoBehaviour
                     , LIL_OFFSET - (i / 3) * LIL_WIDTH
                     , -.02f
                 );
-                bobj.SetActive(false);
+                // bobj.SetActive(false);
                 this.buttons[c, i] = bobj;
             }
         }
@@ -47,17 +47,17 @@ public class Superpositions : MonoBehaviour
                 if (state[i].Count < 2)
                 {
                     // clear board if entropy too low
-                    for (int p = 0; p < 9; p++)
+                    for (int p = 1; p <= 9; p++)
                     {
-                        buttons[i, p].SetActive(false);
+                        buttons[i, p - 1].SetActive(false);
                     }
                 }
                 else
                 {
                     // Otherwise match up the state
-                    for (int p = 0; p < 9; p++)
+                    for (int p = 1; p <= 9; p++)
                     {
-                        buttons[i, p].SetActive(state[i].Contains(p));
+                        buttons[i, p - 1].SetActive(state[i].Contains(p));
                     }
                 }
             }
@@ -71,8 +71,11 @@ public class Superpositions : MonoBehaviour
             for (int i = 0; i < 9; i++)
             {
                 var cb = this.buttons[c, i].GetComponent<Button>().onClick;
+                // TODO: why does this make it work ? 
+                var k = c;
+                var j = i + 1;
                 cb.RemoveAllListeners();
-                cb.AddListener(() => callback(c, i));
+                cb.AddListener(() => callback(k, j));
             }
         }
     }
