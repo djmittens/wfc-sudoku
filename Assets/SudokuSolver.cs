@@ -8,7 +8,6 @@ public class SudokuSolver : MonoBehaviour
     Stack<GameState> history;
     public GameObject canvas;
     Node[] nodes;
-    Stack<Node> propagations;
     SudokuBoard c_board;
     Superpositions c_superpositions;
 
@@ -31,8 +30,7 @@ public class SudokuSolver : MonoBehaviour
             this.c_superpositions.Init(canvas);
             this.c_superpositions.RegisterOnclick((i, v) =>
             {
-                var st = history.Peek().spos;
-                nodes[i].Set(v, st);
+                history.Peek().SetCell(nodes[i], v);
                 UpdateComponents();
             });
         }
@@ -42,21 +40,19 @@ public class SudokuSolver : MonoBehaviour
 
     void InitNodes()
     {
-        this.propagations = new Stack<Node>();
         this.nodes = new Node[81];
         for (int i = 0; i < 81; i++)
         {
             var n = new Node();
             n.id = i;
             n.neighbors = new List<Node>();
-            n.propagations = this.propagations;
             nodes[i] = n;
         }
         for (int i = 0; i < 81; i++)
         {
             for (int k = 0; k < 81; k++)
             {
-                if (i != k && IsNeighbor(i, k) > 0)
+                if (i != k && IsNeighbor(k, i) > 0)
                 {
                     nodes[k].neighbors.Add(nodes[i]);
                 }
@@ -66,15 +62,12 @@ public class SudokuSolver : MonoBehaviour
         // For explanation https://www.desmos.com/calculator/rrucuhps2t
         int IsNeighbor(int candidate, int origin)
         {
+            int Clamp(int k) { return k == 0 ? 1 : 0; }
             return
-            Clamp(candidate / 9 - origin / 9) + //row
-            Clamp((candidate - origin) % 9) + //column
-            Clamp((candidate / 3) % 3 - (origin / 3) % 3) * //neighborhood mask
-            Clamp((candidate / (9 * 3)) - (origin / (9 * 3))); // neighborhood
-        }
-        int Clamp(int k)
-        {
-            return k == 0 ? 1 : 0;
+                Clamp((candidate / 3 - origin / 3) % 3) * //neighborhood
+                Clamp(candidate / 27 - origin / 27) + // neighborhood mask
+                Clamp(candidate / 9 - origin / 9) + //row
+                Clamp((candidate - origin) % 9);  //column
         }
     }
 
@@ -98,7 +91,8 @@ public class SudokuSolver : MonoBehaviour
     void UpdateComponents()
     {
         var st = history.Peek();
-        st.Propagate(propagations);
+        st.WaveFormCollapse();
+
         if (this.c_board != null)
         {
             this.c_board.UpdateState(st.board);
@@ -119,34 +113,55 @@ public class SudokuSolver : MonoBehaviour
     {
         public int[] board;
         public HashSet<int>[] spos; // super positions at that node
+        Stack<Node> propagations;
+        int collapsed = 0;
+
         public GameState(int[] board, Node[] nodes)
         {
             this.board = new int[81];
             this.spos = new HashSet<int>[81];
+            this.propagations = new Stack<Node>();
+
             for (int i = 0; i < 81; i++)
             {
                 spos[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
                 if (board[i] > 0)
                 {
-                    nodes[i].Set(board[i], spos);
+                    SetCell(nodes[i], board[i]);
                 }
             }
         }
-        public bool Propagate(Stack<Node> propagations)
-        {
-            var res = true;
 
+        public void SetCell(Node n, int val)
+        {
+            board[n.id] = val;
+            spos[n.id].Clear();
+            spos[n.id].Add(val);
+            propagations.Push(n);
+        }
+
+        public bool WaveFormCollapse()
+        {
             while (propagations.Count > 0)
             {
                 var node = propagations.Pop();
-                var pos = node.val(this.spos);
+                var pos = this.spos[node.id].Single();
                 this.board[node.id] = pos;
                 foreach (var n in node.neighbors)
                 {
-                    res &= n.Visit(pos, this.spos);
+                    var r = n.Visit(pos, this.spos);
+                    switch (r)
+                    {
+                        case Node.Result.Collapsed:
+                            propagations.Push(n);
+                            break;
+                        case Node.Result.LowEntropy:
+                            Debug.LogError("Something fucked up");
+                            return false;
+                    }
                 }
             }
-            return res;
+            return true;
         }
     }
 
@@ -156,42 +171,25 @@ public class SudokuSolver : MonoBehaviour
 
         public IList<Node> neighbors;
 
-        public Stack<Node> propagations;
-
-        int Entropy(HashSet<int>[] spos)
+        public Result Visit(int pos, HashSet<int>[] spos)
         {
-            return spos[id].Count;
-        }
-
-        public int val(HashSet<int>[] spos)
-        {
-            return spos[id].Single();
-        }
-
-        public bool Visit(int pos, HashSet<int>[] spos)
-        {
+            var res = Result.Success;
             if (spos[id].Contains(pos))
             {
                 spos[id].Remove(pos);
-                var e = Entropy(spos);
-                if (e == 1)
+                var entropy = spos[id].Count;
+                if (entropy == 1)
                 {
-                    Set(val(spos), spos);
+                    res = Result.Collapsed;
                 }
-                else if (e == 0)
+                else if (entropy == 0)
                 {
-                    Debug.LogError("Something fucked up");
-                    return false;
+                    res = Result.LowEntropy;
                 }
             }
-            return true;
+            return res;
         }
 
-        public void Set(int v, HashSet<int>[] spos)
-        {
-            spos[id].Clear();
-            spos[id].Add(v);
-            propagations.Push(this);
-        }
+        public enum Result { Success, Collapsed, LowEntropy }
     }
 }
