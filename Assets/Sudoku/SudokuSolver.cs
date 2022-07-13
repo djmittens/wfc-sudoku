@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SudokuSolver : MonoBehaviour
 {
-    Stack<GameState> history;
+    Stack<BoardState> history;
     public GameObject canvas;
     CellNode[] nodes;
     SudokuBoard c_board;
@@ -12,9 +12,6 @@ public class SudokuSolver : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        InitNodes();
-
-        InitBoardState();
 
         this.c_board = gameObject.GetComponent<SudokuBoard>();
         if (this.c_board != null)
@@ -29,28 +26,23 @@ public class SudokuSolver : MonoBehaviour
             this.c_superpositions.RegisterOnclick((i, v) =>
             {
                 SetCell(i, v);
-                var counter = 0;
-                while (
-                    history.Count > 0 &&
-                    history.Count < 81 &&
-                    !history.Peek().IsDone() &&
-                    counter < 81 * 81)
-                {
-                    var st = this.history.Pop();
-                    var n = st.NextState();
-                    if (n != null)
-                    {
-                        this.history.Push(st);
-                        this.history.Push(n);
-                        UpdateComponents();
-                    }
-                    counter++;
-                }
-                UpdateComponents();
+                Solve(81);
             });
         }
 
-        UpdateComponents();
+        InitNodes();
+
+        InitBoardState(new int[] {
+            0,0,0,0,0,0,0,0,0,
+            0,7,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,4,0,0,
+            0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,
+            1,0,0,0,8,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,
+            0,0,2,0,0,0,0,0,0,
+            0,0,0,0,0,0,3,0,0,
+        });
     }
 
     void InitNodes()
@@ -86,28 +78,13 @@ public class SudokuSolver : MonoBehaviour
         }
     }
 
-    void InitBoardState()
+    public void InitBoardState(int[] board)
     {
-        this.history = new Stack<GameState>();
-        var gameState = new GameState(new int[] {
-            0,0,0,0,0,0,0,0,0,
-            0,7,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,4,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            1,0,0,0,8,0,0,0,0,
-            0,0,0,0,0,0,0,0,0,
-            0,0,2,0,0,0,0,0,0,
-            0,0,0,0,0,0,3,0,0,
-        }, this.nodes);
+        this.history = new Stack<BoardState>();
+        var gameState = new BoardState(board, this.nodes);
         this.history.Push(gameState);
+        UpdateComponents();
     }
-
-    void SetCell(int i, int v)
-    {
-        history.Push(new GameState(history.Peek(), nodes[i], v));
-    }
-
 
     void UpdateComponents()
     {
@@ -124,6 +101,34 @@ public class SudokuSolver : MonoBehaviour
                 this.c_superpositions.UpdateState(st.spos);
             }
         }
+    }
+
+    void SetCell(int i, int v)
+    {
+        history.Push(new BoardState(history.Peek(), nodes[i], v));
+    }
+
+    public int Solve(int iterations)
+    {
+        var count = 0;
+        while (
+            history.Count > 0 &&
+            history.Count < 81 &&
+            !history.Peek().IsDone() &&
+            iterations > count)
+        {
+            var st = this.history.Pop();
+            var n = st.NextState();
+            if (n != null)
+            {
+                this.history.Push(st);
+                this.history.Push(n);
+                UpdateComponents();
+            }
+            count++;
+        }
+        UpdateComponents();
+        return count;
     }
 
     // Update is called once per frame

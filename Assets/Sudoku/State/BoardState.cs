@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class GameState
+class BoardState
 {
     public int[] board;
     public HashSet<int>[] spos; // super positions at that node
@@ -10,7 +10,7 @@ class GameState
     bool hasHoles = false;
     Stack<Candidate> candidates;
 
-    public GameState(int[] board, CellNode[] nodes)
+    public BoardState(int[] board, CellNode[] nodes)
     {
         InitState();
 
@@ -44,7 +44,7 @@ class GameState
 
     }
 
-    public GameState(GameState prev, CellNode node, int val)
+    public BoardState(BoardState prev, CellNode node, int val)
     {
         InitState();
 
@@ -103,13 +103,13 @@ class GameState
     /**
      returns Optional<GameState>
      */
-    public GameState NextState()
+    public BoardState NextState()
     {
         while (candidates.Count > 0)
         {
             var c = candidates.Pop();
             var val = c.spos.Pop();
-            var st = new GameState(this, c.node, val);
+            var st = new BoardState(this, c.node, val);
             if (c.spos.Count > 0)
             {
                 candidates.Push(c);
