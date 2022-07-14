@@ -3,8 +3,9 @@ using UnityEngine;
 
 public class SudokuSolver : MonoBehaviour
 {
-    Stack<BoardState> history;
     public GameObject canvas;
+
+    Stack<BoardState> history;
     CellNode[] nodes;
     SudokuBoard c_board;
     Superpositions c_superpositions;
@@ -103,9 +104,14 @@ public class SudokuSolver : MonoBehaviour
         }
     }
 
-    void SetCell(int i, int v)
+    bool SetCell(int i, int v)
     {
-        history.Push(new BoardState(history.Peek(), nodes[i], v));
+        var st = new BoardState(history.Peek(), nodes[i], v);
+        if(!st.hasHoles) {
+            history.Push(st);
+            return true;
+        }
+        return false;
     }
 
     public int Solve(int iterations)
@@ -119,7 +125,7 @@ public class SudokuSolver : MonoBehaviour
         {
             var st = this.history.Pop();
             var n = st.NextState();
-            if (n != null)
+            if (n != null && !n.hasHoles)
             {
                 this.history.Push(st);
                 this.history.Push(n);

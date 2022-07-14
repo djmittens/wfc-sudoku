@@ -7,7 +7,7 @@ class BoardState
     public HashSet<int>[] spos; // super positions at that node
     Stack<CellNode> propagations;
     int collapsed = 0;
-    bool hasHoles = false;
+    public bool hasHoles = false;
     Stack<Candidate> candidates;
 
     public BoardState(int[] board, CellNode[] nodes)
