@@ -28,7 +28,7 @@ class BoardState
                 }
             }
 
-            while (20 - count > 0)
+            while (count < 20)
             {
                 neighbors[i, count] = -1;
                 count++;
@@ -139,7 +139,7 @@ class BoardState
 
     public bool IsDone()
     {
-        return collapsed == 81 || hasHoles;
+        return collapsed >= 81 || hasHoles;
     }
 
     /**
