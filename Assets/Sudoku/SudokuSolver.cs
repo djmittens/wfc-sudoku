@@ -4,9 +4,7 @@ using UnityEngine;
 public class SudokuSolver : MonoBehaviour
 {
     public GameObject canvas;
-
     Stack<BoardState> history;
-    CellNode[] nodes;
     SudokuBoard c_board;
     Superpositions c_superpositions;
 
@@ -31,8 +29,6 @@ public class SudokuSolver : MonoBehaviour
             });
         }
 
-        InitNodes();
-
         InitBoardState(new int[] {
             0,0,0,0,0,0,0,0,0,
             0,7,0,0,0,0,0,0,0,
@@ -46,43 +42,10 @@ public class SudokuSolver : MonoBehaviour
         });
     }
 
-    void InitNodes()
-    {
-        this.nodes = new CellNode[81];
-        for (int i = 0; i < 81; i++)
-        {
-            var n = new CellNode();
-            n.id = i;
-            n.neighbors = new List<CellNode>();
-            nodes[i] = n;
-        }
-        for (int i = 0; i < 81; i++)
-        {
-            for (int k = 0; k < 81; k++)
-            {
-                if (i != k && IsNeighbor(k, i) > 0)
-                {
-                    nodes[k].neighbors.Add(nodes[i]);
-                }
-            }
-        }
-
-        // For explanation https://www.desmos.com/calculator/rrucuhps2t
-        int IsNeighbor(int candidate, int origin)
-        {
-            int Clamp(int k) { return k == 0 ? 1 : 0; };
-            return
-                Clamp((candidate / 3 - origin / 3) % 3) * //neighborhood
-                Clamp(candidate / 27 - origin / 27) + // neighborhood mask
-                Clamp(candidate / 9 - origin / 9) + //row
-                Clamp((candidate - origin) % 9);  //column
-        }
-    }
-
     public void InitBoardState(int[] board)
     {
         this.history = new Stack<BoardState>();
-        var gameState = new BoardState(board, this.nodes);
+        var gameState = new BoardState(board);
         this.history.Push(gameState);
         UpdateComponents();
     }
@@ -106,7 +69,7 @@ public class SudokuSolver : MonoBehaviour
 
     bool SetCell(int i, int v)
     {
-        var st = new BoardState(history.Peek(), nodes[i], v);
+        var st = new BoardState(history.Peek(), i, v);
         if(!st.hasHoles) {
             history.Push(st);
             return true;
