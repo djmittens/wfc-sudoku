@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Collections;
 using System.Linq;
-using UnityEngine;
 
 class BoardState
 {
@@ -62,21 +60,14 @@ class BoardState
 
         if (WaveFormCollapse())
         {
-
             // Initialize candidates for DFS.
-            var cs = new List<Candidate>();
-            for (int i = 0; i < 81; i++)
-            {
-                if (board[i] == 0 && superpositions[i].Count > 0)
-                {
-                    cs.Add(new Candidate(superpositions[i], i));
-                }
-            }
-            InitCandidates(cs.Count, cs);
+            InitCandidates(Enumerable
+                .Range(0, 81)
+                .Where(i => board[i] == 0 && superpositions[i].Count > 0));
         }
         else
         {
-            InitCandidates(0, Enumerable.Empty<Candidate>());
+            InitCandidates(Enumerable.Empty<int>());
         }
 
     }
@@ -99,11 +90,11 @@ class BoardState
 
         if (WaveFormCollapse())
         {
-            InitCandidates(prev.candidates.Count, prev.candidates);
+            InitCandidates(prev.candidates.Select(c => c.cell));
         }
         else
         {
-            InitCandidates(0, Enumerable.Empty<Candidate>());
+            InitCandidates(Enumerable.Empty<int>());
         }
     }
 
@@ -116,22 +107,15 @@ class BoardState
         this.hasHoles = false;
     }
 
-    void InitCandidates(int count, IEnumerable<Candidate> candidates)
+    void InitCandidates(IEnumerable<int> candidates)
     {
         // Re-use the previous candidates, as each selection narrows the possibilities.
-        // If C# didnt suck i would be able to use PriorityDeque for this
-        var cs = new List<Candidate>();
-        foreach (var c0 in candidates)
-        {
-            if (this.board[c0.cell] == 0)
-            {
-                cs.Add(new Candidate(this.superpositions[c0.cell], c0.cell));
-            }
-        }
-        // Negate this because we want the sorting in reverse, 
-        // as it will populate the stack high count first.
-        cs.Sort();
-        this.candidates = new Stack<Candidate>(cs.Reverse<Candidate>());
+        this.candidates = new Stack<Candidate>(
+            candidates
+                .Select(i => new Candidate(new Stack<int>(this.superpositions[i]), i))
+                .OrderBy(c => c.spos.Count)
+                .Reverse()
+        );
     }
 
     /**
@@ -168,7 +152,7 @@ class BoardState
             {
                 var n = neighbors[cell, i];
 
-                switch (Visit(n, pos, this.superpositions))
+                switch (PropagateCollapse(n, pos, this.superpositions))
                 {
                     case Result.Collapsed:
                         collapsed++;
@@ -183,11 +167,11 @@ class BoardState
         return true;
     }
 
-    Result Visit(int i, int pos, HashSet<int>[] spos)
+    Result PropagateCollapse(int i, int val, HashSet<int>[] spos)
     {
-        if (spos[i].Contains(pos))
+        if (spos[i].Contains(val))
         {
-            spos[i].Remove(pos);
+            spos[i].Remove(val);
             var entropy = spos[i].Count;
 
             switch (entropy)
@@ -212,36 +196,17 @@ class BoardState
         propagations.Push(i);
     }
 
-    public BoardState CollapseCell(int i, int val) {
+    public BoardState CollapseCell(int i, int val)
+    {
         return new BoardState(this, i, val);
     }
 
-    private class Candidate : System.IComparable
-    {
-        public int cell;
-        public Stack<int> spos;
-        public Candidate(HashSet<int> s, int i)
-        {
-            this.cell = i;
-            this.spos = new Stack<int>(s);
-        }
+    private record Candidate(Stack<int> spos, int cell);
+}
 
-        public Candidate(Stack<int> s, int i)
-        {
-            this.cell = i;
-            this.spos = new Stack<int>(s);
-        }
-
-        public int CompareTo(object obj)
-        {
-            if (obj is Candidate)
-            {
-                return this.spos.Count.CompareTo(((Candidate)obj).spos.Count);
-            }
-            else
-            {
-                return -1;
-            }
-        }
-    }
+// LOL, really great language we got here  
+// https://stackoverflow.com/questions/64749385/predefined-type-system-runtime-compilerservices-isexternalinit-is-not-defined
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit { }
 }
