@@ -1,13 +1,16 @@
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
+using UnityEngine;
 
 class BoardState
 {
-    public int[] board;
-    public HashSet<int>[] spos; // super positions at that node
+    public int[] board { get; private set; }
+    public int collapsed { get; private set; }
+    public bool hasHoles { get; private set; }
+    public HashSet<int>[] superpositions { get; private set; } // super positions at that node
+
     Stack<int> propagations;
-    int collapsed = 0;
-    public bool hasHoles = false;
     Stack<Candidate> candidates;
 
     readonly static int[,] neighbors = InitNeighbors();
@@ -21,29 +24,24 @@ class BoardState
             var count = 0;
             for (int j = 0; j < 81; j++)
             {
-                if (i != j && IsNeighbor(j, i) > 0)
+                if (i != j && IsNeighbor(j, i))
                 {
                     neighbors[i, count] = j;
                     count++;
                 }
             }
-
-            while (count < 20)
-            {
-                neighbors[i, count] = -1;
-                count++;
-            }
         }
 
         // For explanation https://www.desmos.com/calculator/rrucuhps2t
-        int IsNeighbor(int candidate, int origin)
+        bool IsNeighbor(int candidate, int origin)
         {
-            int Clamp(int k) { return k == 0 ? 1 : 0; };
             return
-                Clamp((candidate / 3 - origin / 3) % 3) * //neighborhood
-                Clamp(candidate / 27 - origin / 27) + // neighborhood mask
-                Clamp(candidate / 9 - origin / 9) + //row
+                (Clamp((candidate / 3 - origin / 3) % 3) && //neighborhood
+                Clamp(candidate / 27 - origin / 27)) || // neighborhood mask
+                Clamp(candidate / 9 - origin / 9) || //row
                 Clamp((candidate - origin) % 9);  //column
+
+            bool Clamp(int k) { return k == 0; };
         }
 
         return neighbors;
@@ -55,7 +53,7 @@ class BoardState
 
         for (int i = 0; i < 81; i++)
         {
-            spos[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            superpositions[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             if (board[i] > 0)
             {
                 SetCell(i, board[i]);
@@ -69,16 +67,16 @@ class BoardState
             var cs = new List<Candidate>();
             for (int i = 0; i < 81; i++)
             {
-                if (board[i] == 0)
+                if (board[i] == 0 && superpositions[i].Count > 0)
                 {
-                    cs.Add(new Candidate(spos[i], i));
+                    cs.Add(new Candidate(superpositions[i], i));
                 }
             }
             InitCandidates(cs.Count, cs);
         }
         else
         {
-            InitCandidates(0, new List<Candidate>());
+            InitCandidates(0, Enumerable.Empty<Candidate>());
         }
 
     }
@@ -92,7 +90,7 @@ class BoardState
         for (int _i = 0; _i < 81; _i++)
         {
             this.board[_i] = prev.board[_i];
-            this.spos[_i] = new HashSet<int>(prev.spos[_i]);
+            this.superpositions[_i] = new HashSet<int>(prev.superpositions[_i]);
             if (_i == i)
             {
                 SetCell(i, val);
@@ -105,7 +103,7 @@ class BoardState
         }
         else
         {
-            InitCandidates(0, new List<Candidate>());
+            InitCandidates(0, Enumerable.Empty<Candidate>());
         }
     }
 
@@ -113,14 +111,13 @@ class BoardState
     void InitState()
     {
         this.board = new int[81];
-        this.spos = new HashSet<int>[81];
+        this.superpositions = new HashSet<int>[81];
         this.propagations = new Stack<int>();
+        this.hasHoles = false;
     }
 
     void InitCandidates(int count, IEnumerable<Candidate> candidates)
     {
-        hasHoles = count == 0;
-
         // Re-use the previous candidates, as each selection narrows the possibilities.
         // If C# didnt suck i would be able to use PriorityDeque for this
         var cs = new List<Candidate>();
@@ -128,24 +125,19 @@ class BoardState
         {
             if (this.board[c0.cell] == 0)
             {
-                cs.Add(new Candidate(this.spos[c0.cell], c0.cell));
+                cs.Add(new Candidate(this.superpositions[c0.cell], c0.cell));
             }
         }
         // Negate this because we want the sorting in reverse, 
         // as it will populate the stack high count first.
-        cs.Sort((c1, c2) => -c1.compareTo(c2));
-        this.candidates = new Stack<Candidate>(cs);
-    }
-
-    public bool IsDone()
-    {
-        return collapsed >= 81 || hasHoles;
+        cs.Sort();
+        this.candidates = new Stack<Candidate>(cs.Reverse<Candidate>());
     }
 
     /**
      returns Optional<GameState>
      */
-    public BoardState NextState()
+    public BoardState MaybeNextState()
     {
         while (candidates.Count > 0)
         {
@@ -165,12 +157,12 @@ class BoardState
         return null;
     }
 
-    public bool WaveFormCollapse()
+    bool WaveFormCollapse()
     {
         while (propagations.Count > 0)
         {
             var cell = propagations.Pop();
-            var pos = this.spos[cell].Single();
+            var pos = this.superpositions[cell].Single();
             this.board[cell] = pos;
             for (int i = 0; i < 20; i++) // foreach neighbor
             {
@@ -178,7 +170,7 @@ class BoardState
 
                 if (n == -1) break; // the end of the neighbors
 
-                switch (Visit(n, pos, this.spos))
+                switch (Visit(n, pos, this.superpositions))
                 {
                     case Result.Collapsed:
                         collapsed++;
@@ -193,7 +185,7 @@ class BoardState
         return true;
     }
 
-    public Result Visit(int i, int pos, HashSet<int>[] spos)
+    Result Visit(int i, int pos, HashSet<int>[] spos)
     {
         if (spos[i].Contains(pos))
         {
@@ -211,18 +203,18 @@ class BoardState
 
         return Result.Undecided;
     }
-    public enum Result { Undecided, Collapsed, LowEntropy }
 
+    private enum Result { Undecided, Collapsed, LowEntropy }
 
-    public void SetCell(int i, int val)
+    private void SetCell(int i, int val)
     {
         board[i] = val;
-        spos[i] = new HashSet<int> { val };
+        superpositions[i] = new HashSet<int> { val };
         this.collapsed++;
         propagations.Push(i);
     }
 
-    class Candidate
+    private class Candidate : System.IComparable
     {
         public int cell;
         public Stack<int> spos;
@@ -238,9 +230,16 @@ class BoardState
             this.spos = new Stack<int>(s);
         }
 
-        public int compareTo(Candidate c)
+        public int CompareTo(object obj)
         {
-            return this.spos.Count.CompareTo(c.spos.Count);
+            if (obj is Candidate)
+            {
+                return this.spos.Count.CompareTo(((Candidate)obj).spos.Count);
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 }

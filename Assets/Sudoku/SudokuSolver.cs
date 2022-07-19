@@ -62,7 +62,7 @@ public class SudokuSolver : MonoBehaviour
             }
             if (this.c_superpositions != null)
             {
-                this.c_superpositions.UpdateState(st.spos);
+                this.c_superpositions.UpdateState(st.superpositions);
             }
         }
     }
@@ -80,14 +80,15 @@ public class SudokuSolver : MonoBehaviour
     public int Solve(int iterations)
     {
         var count = 0;
+
         while (
             history.Count > 0 &&
             history.Count < 81 &&
-            !history.Peek().IsDone() &&
+            !history.Peek().hasHoles &&
             iterations > count)
         {
             var st = this.history.Pop();
-            var n = st.NextState();
+            var n = st.MaybeNextState();
             if (n != null && !n.hasHoles)
             {
                 this.history.Push(st);
