@@ -56,7 +56,7 @@ class BoardState
             superpositions[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             if (board[i] > 0)
             {
-                SetCell(i, board[i]);
+                _CollapseCell(i, board[i]);
             }
         }
 
@@ -93,7 +93,7 @@ class BoardState
             this.superpositions[_i] = new HashSet<int>(prev.superpositions[_i]);
             if (_i == i)
             {
-                SetCell(i, val);
+                _CollapseCell(i, val);
             }
         }
 
@@ -168,8 +168,6 @@ class BoardState
             {
                 var n = neighbors[cell, i];
 
-                if (n == -1) break; // the end of the neighbors
-
                 switch (Visit(n, pos, this.superpositions))
                 {
                     case Result.Collapsed:
@@ -206,12 +204,16 @@ class BoardState
 
     private enum Result { Undecided, Collapsed, LowEntropy }
 
-    private void SetCell(int i, int val)
+    private void _CollapseCell(int i, int val)
     {
         board[i] = val;
         superpositions[i] = new HashSet<int> { val };
         this.collapsed++;
         propagations.Push(i);
+    }
+
+    public BoardState CollapseCell(int i, int val) {
+        return new BoardState(this, i, val);
     }
 
     private class Candidate : System.IComparable

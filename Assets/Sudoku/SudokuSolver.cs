@@ -69,7 +69,7 @@ public class SudokuSolver : MonoBehaviour
 
     bool SetCell(int i, int v)
     {
-        var st = new BoardState(history.Peek(), i, v);
+        var st = history.Peek().CollapseCell(i, v);
         if(!st.hasHoles) {
             history.Push(st);
             return true;
