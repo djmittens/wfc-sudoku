@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-// using System.Func;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +22,7 @@ public class Superpositions : MonoBehaviour
             {
                 var cellVal = i + 1;
                 var bobj = Instantiate(button, cell.transform);
-                bobj.name = "Spos" + i;
+                bobj.name = "Superposition " + i;
                 bobj.transform.SetParent(cell.transform, false);
                 bobj.transform.Find("Text").GetComponent<TMPro.TMP_Text>().text = "" + cellVal;
                 bobj.transform.Translate(
@@ -43,21 +42,9 @@ public class Superpositions : MonoBehaviour
         {
             if (this.state[i] != state[i])
             {
-                if (state[i].Count < 2)
+                for (int p = 1; p <= 9; p++)
                 {
-                    // clear board if entropy too low
-                    for (int p = 1; p <= 9; p++)
-                    {
-                        buttons[i, p - 1].SetActive(false);
-                    }
-                }
-                else
-                {
-                    // Otherwise match up the state
-                    for (int p = 1; p <= 9; p++)
-                    {
-                        buttons[i, p - 1].SetActive(state[i].Contains(p));
-                    }
+                    buttons[i, p - 1].SetActive(state[i].Contains(p));
                 }
             }
         }

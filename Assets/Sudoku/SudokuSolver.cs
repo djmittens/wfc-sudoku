@@ -4,7 +4,7 @@ using UnityEngine;
 public class SudokuSolver : MonoBehaviour
 {
     public GameObject canvas;
-    Stack<BoardState> history;
+    Stack<WFCState> history;
     SudokuBoard c_board;
     Superpositions c_superpositions;
 
@@ -44,8 +44,8 @@ public class SudokuSolver : MonoBehaviour
 
     public void InitBoardState(int[] board)
     {
-        this.history = new Stack<BoardState>();
-        var gameState = new BoardState(board);
+        this.history = new Stack<WFCState>();
+        var gameState = new WFCState(board);
         this.history.Push(gameState);
         UpdateComponents();
     }
@@ -93,7 +93,6 @@ public class SudokuSolver : MonoBehaviour
             {
                 this.history.Push(st);
                 this.history.Push(n);
-                UpdateComponents();
             }
             count++;
         }

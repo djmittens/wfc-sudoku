@@ -1,15 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-class BoardState
+class WFCState
 {
     public int[] board { get; private set; }
     public int collapsed { get; private set; }
     public bool hasHoles { get; private set; }
     public HashSet<int>[] superpositions { get; private set; } // super positions at that node
 
-    Stack<int> propagations;
-    Stack<Candidate> candidates;
+    private Stack<Candidate> candidates;
 
     readonly static int[,] neighbors = InitNeighbors();
     static int[,] InitNeighbors()
@@ -34,8 +33,8 @@ class BoardState
         bool IsNeighbor(int candidate, int origin)
         {
             return
-                (Clamp((candidate / 3 - origin / 3) % 3) && //neighborhood
-                Clamp(candidate / 27 - origin / 27)) || // neighborhood mask
+                Clamp((candidate / 3 - origin / 3) % 3) && //neighborhood
+                Clamp(candidate / 27 - origin / 27) || // neighborhood mask
                 Clamp(candidate / 9 - origin / 9) || //row
                 Clamp((candidate - origin) % 9);  //column
 
@@ -45,20 +44,22 @@ class BoardState
         return neighbors;
     }
 
-    public BoardState(int[] board)
+    public WFCState(int[] board)
     {
         InitState();
 
+        var propagations = new Stack<int>();
         for (int i = 0; i < 81; i++)
         {
             superpositions[i] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             if (board[i] > 0)
             {
                 _CollapseCell(i, board[i]);
+                propagations.Push(i);
             }
         }
 
-        if (WaveFormCollapse())
+        if (WaveFormCollapse(propagations))
         {
             // Initialize candidates for DFS.
             InitCandidates(Enumerable
@@ -72,11 +73,12 @@ class BoardState
 
     }
 
-    public BoardState(BoardState prev, int i, int val)
+    public WFCState(WFCState prev, int i, int val)
     {
         InitState();
 
         this.collapsed = prev.collapsed;
+        var propagations = new Stack<int>();
 
         for (int _i = 0; _i < 81; _i++)
         {
@@ -85,10 +87,11 @@ class BoardState
             if (_i == i)
             {
                 _CollapseCell(i, val);
+                propagations.Push(i);
             }
         }
 
-        if (WaveFormCollapse())
+        if (WaveFormCollapse(propagations))
         {
             InitCandidates(prev.candidates.Select(c => c.cell));
         }
@@ -103,7 +106,6 @@ class BoardState
     {
         this.board = new int[81];
         this.superpositions = new HashSet<int>[81];
-        this.propagations = new Stack<int>();
         this.hasHoles = false;
     }
 
@@ -118,16 +120,28 @@ class BoardState
         );
     }
 
+    private void _CollapseCell(int i, int val)
+    {
+        this.board[i] = val;
+        this.superpositions[i] = new HashSet<int> { val };
+        this.collapsed++;
+    }
+
+    public WFCState CollapseCell(int i, int val)
+    {
+        return new WFCState(this, i, val);
+    }
+
     /**
      returns Optional<GameState>
      */
-    public BoardState MaybeNextState()
+    public WFCState MaybeNextState()
     {
         while (candidates.Count > 0)
         {
             var c = candidates.Pop();
             var val = c.spos.Pop();
-            var st = new BoardState(this, c.cell, val);
+            var st = new WFCState(this, c.cell, val);
             if (c.spos.Count > 0)
             {
                 candidates.Push(c);
@@ -141,13 +155,14 @@ class BoardState
         return null;
     }
 
-    bool WaveFormCollapse()
+    private bool WaveFormCollapse(Stack<int> propagations)
     {
         while (propagations.Count > 0)
         {
             var cell = propagations.Pop();
             var pos = this.superpositions[cell].Single();
             this.board[cell] = pos;
+
             for (int i = 0; i < 20; i++) // foreach neighbor
             {
                 var n = neighbors[cell, i];
@@ -187,19 +202,6 @@ class BoardState
     }
 
     private enum Result { Undecided, Collapsed, LowEntropy }
-
-    private void _CollapseCell(int i, int val)
-    {
-        board[i] = val;
-        superpositions[i] = new HashSet<int> { val };
-        this.collapsed++;
-        propagations.Push(i);
-    }
-
-    public BoardState CollapseCell(int i, int val)
-    {
-        return new BoardState(this, i, val);
-    }
 
     private record Candidate(Stack<int> spos, int cell);
 }
