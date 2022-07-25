@@ -4,6 +4,7 @@ using UnityEngine;
 public class SudokuSolver : MonoBehaviour
 {
     public GameObject canvas;
+    public uint iterations;
     Stack<WFCState> history;
     SudokuBoard c_board;
     Superpositions c_superpositions;
@@ -25,7 +26,7 @@ public class SudokuSolver : MonoBehaviour
             this.c_superpositions.RegisterOnclick((i, v) =>
             {
                 SetCell(i, v);
-                Solve(81);
+                Solve(iterations);
             });
         }
 
@@ -77,7 +78,7 @@ public class SudokuSolver : MonoBehaviour
         return false;
     }
 
-    public int Solve(int iterations)
+    public int Solve(uint iterations)
     {
         var count = 0;
 
