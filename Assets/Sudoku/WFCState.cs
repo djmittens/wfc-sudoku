@@ -10,40 +10,6 @@ class WFCState
 
     private Stack<Candidate> candidates;
 
-    readonly static int[,] neighbors = InitNeighbors();
-    static int[,] InitNeighbors()
-    {
-        // return new int[81,20];
-        var neighbors = new int[81, 20];
-
-        for (int i = 0; i < 81; i++)
-        {
-            var count = 0;
-            for (int j = 0; j < 81; j++)
-            {
-                if (i != j && IsNeighbor(j, i))
-                {
-                    neighbors[i, count] = j;
-                    count++;
-                }
-            }
-        }
-
-        // For explanation https://www.desmos.com/calculator/rrucuhps2t
-        bool IsNeighbor(int candidate, int origin)
-        {
-            return
-                Clamp((candidate / 3 - origin / 3) % 3) && //neighborhood
-                Clamp(candidate / 27 - origin / 27) || // neighborhood mask
-                Clamp(candidate / 9 - origin / 9) || //row
-                Clamp((candidate - origin) % 9);  //column
-
-            bool Clamp(int k) { return k == 0; };
-        }
-
-        return neighbors;
-    }
-
     public WFCState(int[] board)
     {
         InitState();
@@ -70,7 +36,6 @@ class WFCState
         {
             InitCandidates(Enumerable.Empty<int>());
         }
-
     }
 
     public WFCState(WFCState prev, int i, int val)
@@ -165,7 +130,7 @@ class WFCState
 
             for (int i = 0; i < 20; i++) // foreach neighbor
             {
-                var n = neighbors[cell, i];
+                var n = WFCNeighbors.table[cell, i];
 
                 switch (PropagateCollapse(n, pos, this.superpositions))
                 {
@@ -204,6 +169,43 @@ class WFCState
     private enum Result { Undecided, Collapsed, LowEntropy }
 
     private record Candidate(Stack<int> spos, int cell);
+}
+
+static class WFCNeighbors
+{
+    public readonly static int[,] table = InitNeighbors();
+    static int[,] InitNeighbors()
+    {
+        // return new int[81,20];
+        var neighbors = new int[81, 20];
+
+        for (int i = 0; i < 81; i++)
+        {
+            var count = 0;
+            for (int j = 0; j < 81; j++)
+            {
+                if (i != j && IsNeighbor(j, i))
+                {
+                    neighbors[i, count] = j;
+                    count++;
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
+    // For explanation https://www.desmos.com/calculator/rrucuhps2t
+    static bool IsNeighbor(int candidate, int origin)
+    {
+        return
+            Clamp((candidate / 3 - origin / 3) % 3) && //neighborhood
+            Clamp(candidate / 27 - origin / 27) || // neighborhood mask
+            Clamp(candidate / 9 - origin / 9) || //row
+            Clamp((candidate - origin) % 9);  //column
+
+        bool Clamp(int k) { return k == 0; };
+    }
 }
 
 // LOL, really great language we got here  

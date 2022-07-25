@@ -17,6 +17,7 @@ public class Superpositions : MonoBehaviour
         buttons = new GameObject[81, 9];
         for (int c = 0; c < 81; c++)
         {
+            state[c] = new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
             var cell = canvas.transform.Find(c.ToString());
             for (int i = 0; i < 9; i++)
             {
@@ -40,14 +41,37 @@ public class Superpositions : MonoBehaviour
     {
         for (int i = 0; i < 81; i++)
         {
-            if (this.state[i] != state[i])
+            if (state[i].Count <= 1)
             {
-                for (int p = 1; p <= 9; p++)
-                {
-                    buttons[i, p - 1].SetActive(state[i].Contains(p));
-                }
+                DisableCell(i);
+            }
+            else
+            {
+                UpdateCell(i, state[i]);
             }
         }
+    }
+
+    void DisableCell(int cell)
+    {
+        if (this.state[cell].Count == 0) return;
+
+        for (int p = 1; p <= 9; p++)
+        {
+            buttons[cell, p - 1].SetActive(false);
+        }
+        this.state[cell] = new HashSet<int>();
+    }
+
+    void UpdateCell(int cell, HashSet<int> state)
+    {
+        if (this.state[cell] == state) return;
+
+        for (int p = 1; p <= 9; p++)
+        {
+            buttons[cell, p - 1].SetActive(state.Contains(p));
+        }
+        this.state[cell] = new HashSet<int>(state);
     }
 
     public void RegisterOnclick(System.Action<int, int> callback)
