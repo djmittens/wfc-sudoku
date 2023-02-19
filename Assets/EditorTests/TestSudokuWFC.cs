@@ -6,6 +6,7 @@ using UnityEngine.TestTools;
 
 public class TestSudokuWFC
 {
+//     WFCState board;
     // A Test behaves as an ordinary method
     [Test]
     public void TestSudokuWFCSimplePasses()

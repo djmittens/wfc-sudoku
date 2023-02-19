@@ -132,7 +132,7 @@ class WFCState
             {
                 var n = WFCNeighbors.table[cell, i];
 
-                switch (PropagateCollapse(n, pos, this.superpositions))
+                switch (PropagateCollapse(n, pos))
                 {
                     case Result.Collapsed:
                         collapsed++;
@@ -147,12 +147,12 @@ class WFCState
         return true;
     }
 
-    Result PropagateCollapse(int i, int val, HashSet<int>[] spos)
+    Result PropagateCollapse(int i, int val)
     {
-        if (spos[i].Contains(val))
+        if (this.superpositions[i].Contains(val))
         {
-            spos[i].Remove(val);
-            var entropy = spos[i].Count;
+            this.superpositions[i].Remove(val);
+            var entropy = this.superpositions[i].Count;
 
             switch (entropy)
             {
